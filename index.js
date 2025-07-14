@@ -1,41 +1,32 @@
 const express = require('express');
 const fs = require('fs');
-const { exec } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// При старте — обновим отзывы
-exec('node scrape.js', (err, stdout, stderr) => {
-  if (err) console.error(stderr);
-  else console.log(stdout);
-});
 
 app.get('/', (req, res) => {
   let reviews = [];
   try {
     reviews = JSON.parse(fs.readFileSync('reviews.json', 'utf8'));
-  } catch (err) {
+  } catch {
     reviews = [];
   }
 
-  const html = reviews.map(r => `
-    <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-      <strong>${r.author_name}</strong> – ★${r.rating}<br/>
-      <em>${r.relative_time_description}</em><br/>
+  let html = reviews.map(r => `
+    <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+      <strong>${r.author}</strong> — ${r.rating}<br/>
+      <small>${r.date}</small>
       <p>${r.text}</p>
     </div>
   `).join('');
 
   res.send(`
-    <html>
-      <head><title>Google Відгуки</title></head>
-      <body>
-        <h1>Останні відгуки</h1>
-        ${html}
-      </body>
-    </html>
+    <html><head><title>Отзывы Google</title></head>
+    <body>
+      <h1>Отзывы</h1>
+      ${html}
+    </body></html>
   `);
 });
 
-app.listen(PORT, () => console.log(`Сервер запущен на http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server started on http://localhost:${PORT}`));
